@@ -1,3 +1,8 @@
+# ================= USERDATA ================
+data "template_file" "user_data" {
+  template = file("${path.module}/user_data.sh")
+}
+
 # ================= NETWORK =================
 
 module "wordpress_vpc" {
@@ -7,6 +12,9 @@ module "wordpress_vpc" {
   private_subnet_cidr  = var.private_subnet_cidr
   public_subnet_cidr   = var.public_subnet_cidr
   network_interface_id = module.wp_bastion_server.primary_network_interface_id
+
+  user_data = data.template_file.user_data.rendered
+  
   tags                 = var.tags
 }
 
