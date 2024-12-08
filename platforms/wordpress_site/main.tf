@@ -13,8 +13,8 @@ module "wordpress_vpc" {
   public_subnet_cidr   = var.public_subnet_cidr
   network_interface_id = module.wp_bastion_server.primary_network_interface_id
 
-  user_data = data.template_file.user_data.rendered
-  
+
+
   tags                 = var.tags
 }
 
@@ -42,6 +42,8 @@ module "wordpress_server" {
   })
   key_name               = module.wp_keypair.key_name
   vpc_security_group_ids = [module.wordpress_server_sg.sg_id]
+
+  user_data = data.template_file.user_data.rendered
 }
 
 # ================= NAT INSTANCE =================
