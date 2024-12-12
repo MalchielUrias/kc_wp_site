@@ -1,8 +1,3 @@
-# ================= USERDATA ================
-data "template_file" "user_data" {
-  template = file("${path.module}/user_data.sh")
-}
-
 # ================= NETWORK =================
 
 module "wordpress_vpc" {
@@ -30,6 +25,7 @@ module "wp_bastion_server" {
   })
   key_name               = module.wp_keypair.key_name
   vpc_security_group_ids = [module.wordpress_server_sg.sg_id]
+  user_data = null
 }
 
 module "wordpress_server" {
@@ -43,7 +39,7 @@ module "wordpress_server" {
   key_name               = module.wp_keypair.key_name
   vpc_security_group_ids = [module.wordpress_server_sg.sg_id]
 
-  user_data = data.template_file.user_data.rendered
+  user_data = file("${path.module}/user_data.sh")
 }
 
 # ================= NAT INSTANCE =================
