@@ -40,7 +40,7 @@ jobs:
         echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> .env
 
         # Deploy using Docker Compose
-        docker compose up -d
+        docker compose -f apps/wordpress/docker-compose.yml up up -d
 
 #     - name: Clean up
 #       run: |
