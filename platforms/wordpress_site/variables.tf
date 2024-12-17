@@ -36,3 +36,7 @@ variable "key_name" {
 variable "sg_description" {
   default = "Wordpress Site Security Group"
 }
+
+variable "bastion_sg_description" {
+  default = "Bastion Site Security Group"
+}

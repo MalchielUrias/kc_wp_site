@@ -24,7 +24,7 @@ module "wp_bastion_server" {
     "Name" = "Website Bastion"
   })
   key_name               = module.wp_keypair.key_name
-  vpc_security_group_ids = [module.wordpress_server_sg.sg_id]
+  vpc_security_group_ids = [module.wordpress_bastion_sg.sg_id]
   user_data = null
 }
 
@@ -82,7 +82,7 @@ module "wordpress_server_sg" {
       "from_port"   = 22,
       "to_port"     = 22,
       "protocol"    = "tcp",
-      "cidr_blocks" = ["10.0.1.0/24"]
+      "cidr_blocks" = ["10.2.20.0/24"]
     },
     {
       "type"        = "ingress"
@@ -90,7 +90,7 @@ module "wordpress_server_sg" {
       "from_port"   = 80,
       "to_port"     = 80,
       "protocol"    = "tcp",
-      "cidr_blocks" = ["10.0.2.0/24"]
+      "cidr_blocks" = ["10.2.20.0/24"]
     },
     {
       "type"        = "ingress"
@@ -98,7 +98,7 @@ module "wordpress_server_sg" {
       "from_port"   = 443,
       "to_port"     = 443,
       "protocol"    = "tcp",
-      "cidr_blocks" = ["10.0.2.0/24"]
+      "cidr_blocks" = ["10.2.20.0/24"]
     },
     {
       "type"        = "egress"
@@ -110,3 +110,42 @@ module "wordpress_server_sg" {
   ]
 }
 
+module "wordpress_bastion_sg" {
+  source      = "github.com/MalchielUrias/kubecounty_infrastructure//terraform/aws/modules/sg"
+  name        = "${var.name}-wp-bastion-sg"
+  description = var.sg_description
+  tags        = var.tags
+  vpc_id      = module.wordpress_vpc.vpc_id
+  rules = [
+    {
+      "type"        = "ingress"
+      "from_port"   = 22,
+      "to_port"     = 22,
+      "protocol"    = "tcp",
+      "cidr_blocks" = ["0.0.0.0/0"]
+    },
+    {
+      "type"        = "ingress"
+      "description" = "HTTP"
+      "from_port"   = 80,
+      "to_port"     = 80,
+      "protocol"    = "tcp",
+      "cidr_blocks" = ["0.0.0.0/0"]
+    },
+    {
+      "type"        = "ingress"
+      "description" = "HTTS"
+      "from_port"   = 443,
+      "to_port"     = 443,
+      "protocol"    = "tcp",
+      "cidr_blocks" = ["0.0.0.0/0"]
+    },
+    {
+      "type"        = "egress"
+      "from_port"   = 0,
+      "to_port"     = 0,
+      "protocol"    = "-1",
+      "cidr_blocks" = ["0.0.0.0/0"]
+    }
+  ]
+}
