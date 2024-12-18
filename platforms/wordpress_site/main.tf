@@ -13,6 +13,95 @@ module "wordpress_vpc" {
   tags                 = var.tags
 }
 
+# ============= ROLES AND POLICY ============
+
+data "aws_iam_policy_document" "github_oidc_trust_policy" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Federated"
+      identifiers = [module.github_oidc.arn]
+    }
+
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["repo:MalchielUrias/kc_wp_site:*"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "ssm_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "github_access_policy" {
+  statement {
+    effect = "Allow"
+
+    actions = [ 
+      "ec2:DescribeInstances",
+      "ec2:StartInstances",
+      "ec2:StopInstances",
+      "ec2:TerminateInstances",
+      "ssm:SendCommand",
+      "ssm:GetCommandInvocation"
+     ]
+
+    resources = [ module.wp_server.arn ]
+  }
+}
+
+module "github_oidc" {
+  source = "github.com/MalchielUrias/kubecounty_infrastructure//terraform/aws/modules/openid_connect"
+}
+
+# Create KMS Role
+module "github_oidc_role" {
+  source = "github.com/MalchielUrias/tepe_masterclass//modules/iam"
+  name = "github_oidc_role"
+  assume_role_policy = data.aws_iam_policy_document.github_oidc_trust_policy.json
+  policy_arns = []
+}
+
+# Create KMS Policy 
+module "github_oidc_policy" {
+  source = "github.com/MalchielUrias/tepe_masterclass//modules/iam-role"
+  policy_name = "github_oidc_policy"
+  policy_role = module.github_oidc_role.role_name
+  policy = data.aws_iam_policy_document.github_access_policy.json
+}
+
+module "instance_profile" {
+  source = "github.com/MalchielUrias/tepe_masterclass//modules/iam"
+  name = "instance_profile"
+  assume_role_policy = data.aws_iam_policy_document.ssm_role.json
+  policy_arns = [
+    "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  ]
+}
+
+resource "aws_iam_instance_profile" "ssm_instance_profile" {
+  name = "ssm_instance_profile"
+  role = module.instance_profile.role_name
+}
+
 # ================= SERVERS =================
 
 module "wp_bastion_server" {
@@ -28,11 +117,12 @@ module "wp_bastion_server" {
   user_data = null
 }
 
-module "wordpress_server" {
+module "wp_server" {
   source = "github.com/MalchielUrias/kubecounty_infrastructure//terraform/aws/modules/ec2"
   ami           = var.ami
   instance_type = var.wp_type
   subnet_id     = module.wordpress_vpc.private_subnet_id
+  iam_instance_profile = aws_iam_instance_profile.ssm_instance_profile.name
   tags = merge(var.tags, {
     "Name" = "Kubecounty WP Node"
   })
