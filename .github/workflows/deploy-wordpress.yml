@@ -20,13 +20,13 @@ jobs:
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3
       with:
-        role-to-assume: ${{ secret.OIDC_ROLE }}
+        role-to-assume: ${{ secrets.OIDC_ROLE }}
         aws-region: eu-west-1
 
     - name: Deploy WordPress via SSM
       run: |
         aws ssm send-command \
-          --instance-ids ${{ secret.EC2_INSTANCE_ID }} \
+          --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
           --document-name "AWS-RunShellScript" \
           --comment "Deploy WordPress Docker Compose" \
           --parameters commands=" 
