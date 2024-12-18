@@ -29,15 +29,15 @@ jobs:
           --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
           --document-name "AWS-RunShellScript" \
           --comment "Deploy WordPress Docker Compose" \
-          --parameters commands=" 
-            cd ~/app;
-            echo 'WORDPRESS_DB_HOST=mysql:3306' >> .env;
-            echo 'WORDPRESS_DB_NAME=wordpress' >> .env;
-            echo 'WORDPRESS_DB_USER=bn_wordpress' >> .env;
-            echo 'WORDPRESS_DB_PASSWORD=${{ secrets.WORDPRESS_DB_PASSWORD }}' >> .env;
-            echo 'MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}' >> .env;
-            echo 'MYSQL_DATABASE=wordpress' >> .env;
-            echo 'MYSQL_USER=bn_wordpress' >> .env;
-            echo 'MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}' >> .env;
-            docker compose -f apps/wordpress/docker-compose.yml up -d;" \
+          --parameters '{"commands":["cd ~/app", 
+            "echo WORDPRESS_DB_HOST=mysql:3306 >> .env", 
+            "echo WORDPRESS_DB_NAME=wordpress >> .env", 
+            "echo WORDPRESS_DB_USER=bn_wordpress >> .env", 
+            "echo WORDPRESS_DB_PASSWORD=${{ secrets.WORDPRESS_DB_PASSWORD }} >> .env", 
+            "echo MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} >> .env", 
+            "echo MYSQL_DATABASE=wordpress >> .env", 
+            "echo MYSQL_USER=bn_wordpress >> .env", 
+            "echo MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} >> .env", 
+            "docker compose -f apps/wordpress/docker-compose.yml up -d"]}' \
           --output text
+
