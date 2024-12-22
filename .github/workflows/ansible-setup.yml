@@ -7,6 +7,10 @@ on:
     paths:
       - "ansible/**"
 
+permissions:
+  id-token: write   
+  contents: read  
+
 jobs:
   # Deploy files to bastion ec2
   deploy_files:
