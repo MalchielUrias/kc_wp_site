@@ -1,5 +1,5 @@
 ---
-- name: Configure HAProxy on Bastion EC2
+- name: Configure HAProxy on Bastion Host
   hosts: localhost
   become: yes
   tasks:
