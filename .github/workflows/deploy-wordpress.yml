@@ -42,3 +42,28 @@ jobs:
             "docker compose -f apps/wordpress/docker-compose.yml up -d"]}' \
           --output text
 
+    - name: Verify deployment
+      run: |
+        # Wait a bit for containers to start
+        sleep 30
+        
+        aws ssm send-command \
+          --instance-ids ${{ env.EC2_INSTANCE_ID }} \
+          --document-name "AWS-RunShellScript" \
+          --comment "Check Docker containers status" \
+          --parameters '{
+            "commands":[
+              "cd ~/app",
+              "echo \"Container Status:\"",
+              "docker compose -f apps/wordpress/docker-compose.yml ps --format json",
+              "echo \"Container Logs (last 10 lines):\"",
+              "docker compose -f apps/wordpress/docker-compose.yml logs --tail=10",
+              "# Check if containers are running",
+              "if ! docker compose -f apps/wordpress/docker-compose.yml ps --format json | grep -q \"\\\"State\\\": \\\"running\\\"\"; then",
+              "  echo \"Error: Not all containers are running\"",
+              "  exit 1",
+              "fi"
+            ]
+          }' \
+          --output text
+
