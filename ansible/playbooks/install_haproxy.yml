@@ -1,0 +1,45 @@
+---
+- name: Configure HAProxy on Bastion Host
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Ensure haproxy group exists
+      group:
+        name: haproxy
+        state: present
+
+    - name: Ensure haproxy user and group exist
+      user:
+        name: haproxy
+        group: haproxy
+        shell: /bin/false
+        system: yes
+        state: present
+
+    - name: Install HAProxy
+      apt:
+        name: haproxy
+        state: present
+      tags: haproxy
+
+    - name: Create HAProxy configuration file
+      template:
+        src: ../jinja/haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
+      notify:
+        - restart haproxy
+
+    - name: Ensure HAProxy is enabled and started
+      systemd:
+        name: haproxy
+        enabled: true
+        state: started
+
+  handlers:
+    - name: restart haproxy
+      systemd:
+        name: haproxy
+        state: restarted
