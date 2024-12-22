@@ -64,7 +64,7 @@ data "aws_iam_policy_document" "github_access_policy" {
       "ssm:GetCommandInvocation"
      ]
 
-    resources = [ module.wp_server.arn ]
+    resources = [ module.wp_server.arn, module.wp_bastion_server.arn, "arn:aws:ssm:eu-west-1::document/AWS-RunShellScript" ]
   }
 }
 
