@@ -11,6 +11,9 @@ permissions:
   id-token: write   
   contents: read  
 
+env:
+  GH_TOKEN: ${{ github.token }}
+
 jobs:
   # Deploy files to bastion ec2
   deploy_files:
