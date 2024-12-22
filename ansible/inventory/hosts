@@ -1,0 +1,9 @@
+[bastion]
+bastion ansible_host=34.254.163.118
+
+[wp:children]
+bastion
+
+[wp:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+ansible_user=ubuntu
