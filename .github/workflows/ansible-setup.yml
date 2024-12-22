@@ -41,7 +41,7 @@ jobs:
           URL=$(gh run list-artifacts --name ansible-files --json url --jq '.[] | .url')
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=instanceIds,Values=${{ secrets.BASTION_INSTANCE_ID }}" \
+            --targets "Key=instanceIds,Values=${{ env.BASTION_INSTANCE_ID }}" \
             --parameters "commands=[\"curl -o ~/ansible.zip $URL\",\"unzip ~/ansible.zip -d ~/ansible/\"]" \
             --comment "Deploy Ansible files" \
 
