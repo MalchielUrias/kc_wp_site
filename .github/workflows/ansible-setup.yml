@@ -47,7 +47,7 @@ jobs:
           
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=instanceIds,Values=${{ secrets.BASTION_INSTANCE_ID }}" \
+            --instance-ids ${{ secrets.BASTION_INSTANCE_ID  }} \
             --parameters "commands=[\"curl -L -o ~/ansible.zip '$ARTIFACT_URL'\",\"unzip -o ~/ansible.zip -d ~/ansible/\"]" \
             --comment "Deploy Ansible files"
 
@@ -63,7 +63,7 @@ jobs:
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --targets "Key=instanceIds,Values=${{ secrets.BASTION_INSTANCE_ID }}" \
+            --instance-ids ${{ secrets.BASTION_INSTANCE_ID  }} \
             --parameters '{"commands":["sudo yum update -y", "sudo yum install -y python3", "sudo alternatives --set python /usr/bin/python3", "sudo pip3 install ansible"],"executionTimeout":["300"]}' \
             --comment "Installing Python and Ansible" \
             --output text \
