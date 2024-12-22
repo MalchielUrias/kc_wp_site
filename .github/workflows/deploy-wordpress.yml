@@ -5,10 +5,6 @@ on:
     branches:
       - main
 
-permissions:
-  id-token: write   
-  contents: read  
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -26,6 +22,7 @@ jobs:
       with:
         role-to-assume: ${{ env.OIDC_ROLE }}
         aws-region: eu-west-1
+        audience: sts.amazonaws.com
 
     - name: Deploy WordPress via SSM
       run: |
