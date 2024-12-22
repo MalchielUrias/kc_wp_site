@@ -1,6 +1,6 @@
 ---
 - name: Configure HAProxy on Bastion EC2
-  hosts: localhost
+  hosts: bastion
   become: yes
   tasks:
     - name: Ensure haproxy group exists
