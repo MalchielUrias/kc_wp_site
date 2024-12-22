@@ -98,6 +98,12 @@ jobs:
           ls -lr
           ls -lr ansible/
 
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.BASTION_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
       - name: Run Ansible Playbook
         run: |
           ansible-playbook -i ansible/inventory/hosts ansible/playbooks/install_haproxy.yml
