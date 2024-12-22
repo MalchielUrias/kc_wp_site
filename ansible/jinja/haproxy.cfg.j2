@@ -28,5 +28,5 @@ backend wordpress_backend
     balance roundrobin
     option forwardfor
     http-request set-header X-Forwarded-Proto https if { ssl_fc }
-    server wordpress_private {{ hostvars['wordpress']['ansible_host'] }}:80 check
+    server wordpress_private {{ hostvars['bastion']['ansible_host'] }}:80 check
 
