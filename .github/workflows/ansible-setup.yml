@@ -96,10 +96,10 @@ jobs:
       - name: View dirs
         run: |
           ls -lr
-          ls -lr ~/ansible/
+          ls -lr /ansible/
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i ~/ansible/inventory/hosts ~/ansible/playbooks/install_haproxy.yml
+          ansible-playbook -i /ansible/inventory/hosts /ansible/playbooks/install_haproxy.yml
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
