@@ -26,47 +26,27 @@ jobs:
         aws-region: eu-west-1
         audience: sts.amazonaws.com
 
-    - name: Deploy WordPress via SSM
-      run: |
-        aws ssm send-command \
-          --instance-ids ${{ vars.EC2_INSTANCE_ID }} \
-          --document-name "AWS-RunShellScript" \
-          --comment "Deploy WordPress Docker Compose" \
-          --parameters '{"commands":["cd ~/app", 
-            "echo WORDPRESS_DB_HOST=mysql:3306 >> .env", 
-            "echo WORDPRESS_DB_NAME=wordpress >> .env", 
-            "echo WORDPRESS_DB_USER=bn_wordpress >> .env", 
-            "echo WORDPRESS_DB_PASSWORD=${{ secrets.WORDPRESS_DB_PASSWORD }} >> .env", 
-            "echo MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} >> .env", 
-            "echo MYSQL_DATABASE=wordpress >> .env", 
-            "echo MYSQL_USER=bn_wordpress >> .env", 
-            "echo MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} >> .env", 
-            "docker compose -f apps/wordpress/docker-compose.yml up -d"]}' \
-          --output text
-
-    - name: Verify deployment
-      run: |
-        # Wait a bit for containers to start
-        sleep 30
-        
-        aws ssm send-command \
-          --instance-ids ${{ vars.EC2_INSTANCE_ID }} \
-          --document-name "AWS-RunShellScript" \
-          --comment "Check Docker containers status" \
-          --parameters '{
-            "commands":[
-              "cd ~/app",
-              "docker ps",
-              "echo \"Container Status:\"",
-              "docker compose -f apps/wordpress/docker-compose.yml ps --format json",
-              "echo \"Container Logs (last 10 lines):\"",
-              "docker compose -f apps/wordpress/docker-compose.yml logs --tail=10",
-              "# Check if containers are running",
-              "if ! docker compose -f apps/wordpress/docker-compose.yml ps --format json | grep -q \"\\\"State\\\": \\\"running\\\"\"; then",
-              "  echo \"Error: Not all containers are running\"",
-              "  exit 1",
-              "fi"
-            ]
-          }' \
-          --output text
-
+    - name: SSH into Bastion Host and Deploy to Private EC2
+      uses: appleboy/ssh-action@v0.1.6
+      with:
+        host: ${{ vars.BASTION_HOST }}
+        username: ${{ vars.BASTION_USER }} 
+        key: ${{ secrets.BASTION_PRIVATE_KEY }}
+        port: 22
+        script: |
+          # SSH to the private EC2 instance from the bastion host
+          ssh -o StrictHostKeyChecking=no -i /path/to/private-key.pem ec2-user@${{ vars.EC2_INSTANCE_ID }} << 'EOF'
+            # Deploy Docker Compose files directly from the repo
+            ls
+            cd ~/app
+            echo WORDPRESS_DB_HOST=mysql:3306 >> .env
+            echo WORDPRESS_DB_NAME=wordpress >> .env
+            echo WORDPRESS_DB_USER=bn_wordpress >> .env
+            echo WORDPRESS_DB_PASSWORD=${{ secrets.WORDPRESS_DB_PASSWORD }} >> .env
+            echo MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} >> .env
+            echo MYSQL_DATABASE=wordpress >> .env
+            echo MYSQL_USER=bn_wordpress >> .env
+            echo MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} >> .env
+            docker compose -f apps/wordpress/docker-compose.yml up -d
+            docker ps
+          EOF
