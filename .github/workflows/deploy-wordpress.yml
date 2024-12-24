@@ -26,6 +26,11 @@ jobs:
         aws-region: eu-west-1
         audience: sts.amazonaws.com
 
+    - name: Create SSH private key file
+      run: |
+        echo "${{ secrets.BASTION_PRIVATE_KEY }}" > /tmp/private-key.pem
+        chmod 600 /tmp/private-key.pem 
+
     - name: SSH into Bastion Host and Deploy to Private EC2
       uses: appleboy/ssh-action@v0.1.6
       with:
@@ -35,7 +40,7 @@ jobs:
         port: 22
         script: |
           # SSH to the private EC2 instance from the bastion host
-          ssh -o StrictHostKeyChecking=no -T ubuntu@${{ vars.WP_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -T -i /tmp/private-key.pem ubuntu@${{ vars.WP_HOST }} << 'EOF'
             # Deploy Docker Compose files directly from the repo
             ls
             cd ~/app
