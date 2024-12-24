@@ -35,7 +35,7 @@ jobs:
         port: 22
         script: |
           # SSH to the private EC2 instance from the bastion host
-          ssh -o StrictHostKeyChecking=no ubuntu@${{ vars.EC2_INSTANCE_ID }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -T ubuntu@${{ vars.WP_HOST }} << 'EOF'
             # Deploy Docker Compose files directly from the repo
             ls
             cd ~/app
