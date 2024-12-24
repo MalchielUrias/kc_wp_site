@@ -56,6 +56,7 @@ jobs:
           --parameters '{
             "commands":[
               "cd ~/app",
+              "docker ps"
               "echo \"Container Status:\"",
               "docker compose -f apps/wordpress/docker-compose.yml ps --format json",
               "echo \"Container Logs (last 10 lines):\"",
