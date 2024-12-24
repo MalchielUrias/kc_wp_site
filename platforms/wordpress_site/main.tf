@@ -88,7 +88,7 @@ module "github_oidc_policy" {
   policy = data.aws_iam_policy_document.github_access_policy.json
 }
 
-# instance profile
+# Instance Profile
 
 module "instance_profile" {
   source = "github.com/MalchielUrias/tepe_masterclass//modules/iam"
