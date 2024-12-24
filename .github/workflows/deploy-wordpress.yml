@@ -34,7 +34,7 @@ jobs:
 
     - name: Copy Docker Compose files to EC2
       run: |
-        scp -o StrictHostKeyChecking=no -r apps/wordpress/ ec2-user@${{ secrets.PRIVATE_EC2_IP }}:~/
+        scp -o StrictHostKeyChecking=no -r apps/wordpress/ ubuntur@${{ vars.WP_HOST }}:~/
 
     - name: SSH into Bastion Host and Deploy to Private EC2
       uses: appleboy/ssh-action@v0.1.6
