@@ -44,7 +44,7 @@ jobs:
         key: ${{ secrets.BASTION_PRIVATE_KEY }}
         port: 22
         script: |
-          scp -o StrictHostKeyChecking=no -r ~/wordpress ubuntu@${{ vars.BASTION_HOST }}:~/
+          scp -o StrictHostKeyChecking=no -r ~/wordpress ubuntu@${{ vars.WP_HOST }}:~/
           # SSH to the private EC2 instance from the bastion host
           ssh -o StrictHostKeyChecking=no -T -i .ssh/wp_server_keypair_private_key.pem ubuntu@${{ vars.WP_HOST }} << 'EOF'
             # Deploy Docker Compose files directly from the repo
