@@ -26,6 +26,16 @@ jobs:
         aws-region: eu-west-1
         audience: sts.amazonaws.com
 
+    - name: Configure SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+
+    - name: Copy Docker Compose files to EC2
+      run: |
+        scp -o StrictHostKeyChecking=no -r apps/wordpress/ ec2-user@${{ secrets.PRIVATE_EC2_IP }}:~/
+
     - name: SSH into Bastion Host and Deploy to Private EC2
       uses: appleboy/ssh-action@v0.1.6
       with:
@@ -38,7 +48,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -T -i .ssh/wp_server_keypair_private_key.pem ubuntu@${{ vars.WP_HOST }} << 'EOF'
             # Deploy Docker Compose files directly from the repo
             ls
-            cd ~/app
+            cd ~/wordpress
             echo WORDPRESS_DB_HOST=mysql:3306 >> .env
             echo WORDPRESS_DB_NAME=wordpress >> .env
             echo WORDPRESS_DB_USER=bn_wordpress >> .env
@@ -47,6 +57,6 @@ jobs:
             echo MYSQL_DATABASE=wordpress >> .env
             echo MYSQL_USER=bn_wordpress >> .env
             echo MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} >> .env
-            docker compose -f apps/wordpress/docker-compose.yml up -d
+            docker compose up -d
             docker ps
           EOF
