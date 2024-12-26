@@ -186,6 +186,14 @@ module "wordpress_server_sg" {
     },
     {
       "type"        = "ingress"
+      "description" = "HTTP"
+      "from_port"   = 8080,
+      "to_port"     = 8080,
+      "protocol"    = "tcp",
+      "cidr_blocks" = ["10.2.20.0/24"]
+    },
+    {
+      "type"        = "ingress"
       "description" = "HTTS"
       "from_port"   = 443,
       "to_port"     = 443,
@@ -221,6 +229,14 @@ module "wordpress_bastion_sg" {
       "description" = "HTTP"
       "from_port"   = 80,
       "to_port"     = 80,
+      "protocol"    = "tcp",
+      "cidr_blocks" = ["0.0.0.0/0"]
+    },
+    {
+      "type"        = "ingress"
+      "description" = "HTTP"
+      "from_port"   = 8080,
+      "to_port"     = 8080,
       "protocol"    = "tcp",
       "cidr_blocks" = ["0.0.0.0/0"]
     },
