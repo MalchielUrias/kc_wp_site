@@ -59,6 +59,8 @@ jobs:
             echo MYSQL_DATABASE=wordpress >> .env
             echo MYSQL_USER=bn_wordpress >> .env
             echo MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} >> .env
+            ls
+            docker compose down
             docker compose up -d
             docker ps
           EOF
