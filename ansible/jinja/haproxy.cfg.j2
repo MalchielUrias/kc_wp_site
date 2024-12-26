@@ -17,16 +17,17 @@ defaults
     timeout server  100000ms
 
 # Frontend configuration
-frontend http_front
+# WordPress Frontend
+frontend wordpress_front
+    bind *:8080
+    mode http
+    default_backend wordpress_backend
+
+# Nextcloud Frontend
+frontend nextcloud_front
     bind *:80
     mode http
-    acl is_wordpress path_beg /wordpress
-    acl is_nextcloud path_beg /nextcloud
-
-    use_backend wordpress_backend if is_wordpress
-    use_backend nextcloud_backend if is_nextcloud
-
-    default_backend wordpress_backend  # Default to WordPress if no match
+    default_backend nextcloud_backend
 
 # Backend configuration for WordPress
 backend wordpress_backend
@@ -34,8 +35,7 @@ backend wordpress_backend
     balance roundrobin
     option forwardfor
     http-request set-header X-Forwarded-Proto https if { ssl_fc }
-    http-request set-path %[path,regsub(^/wordpress/,/)]
-    server wordpress_private 10.2.10.38:80 check
+    server wordpress_private 10.2.10.38:8080 check
 
 # Backend configuration for Nextcloud
 backend nextcloud_backend
@@ -43,5 +43,4 @@ backend nextcloud_backend
     balance roundrobin
     option forwardfor
     http-request set-header X-Forwarded-Proto https if { ssl_fc }
-    http-request set-path %[path,regsub(^/nextcloud/,/)]
     server nextcloud_private 10.2.10.247:80 check
