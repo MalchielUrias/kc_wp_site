@@ -52,7 +52,7 @@ jobs:
             # Deploy Docker Compose files directly from the repo
             ls
             cd ~/wordpress
-            echo WORDPRESS_DATABASE_HOST=mysql:3306 >> .env
+            echo WORDPRESS_DATABASE_HOST=mysql >> .env
             echo WORDPRESS_DATABASE_NAME=wordpress >> .env
             echo WORDPRESS_DATABASE_USER=bn_wordpress >> .env
             echo WORDPRESS_DATABASE_PASSWORD=${{ secrets.WORDPRESS_DB_PASSWORD }} >> .env
