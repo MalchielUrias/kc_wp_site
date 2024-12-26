@@ -43,6 +43,8 @@ jobs:
           key: ${{ secrets.BASTION_PRIVATE_KEY }}
           port: 22
           script: |
+            sudo apt update -y
+            sudo apt install -y unzip
             unzip -o ~/ansible.zip -d ~/ansible/
             rm ~/ansible.zip
 
@@ -65,10 +67,10 @@ jobs:
           key: ${{ secrets.BASTION_PRIVATE_KEY }}
           port: 22
           script: |
-            sudo yum update -y
-            sudo yum install -y python3
-            sudo alternatives --set python /usr/bin/python3
-            sudo pip3 install ansible
+            sudo apt update -y
+            sudo apt install -y python3 python3-pip
+            sudo alternatives --set python /usr/bin/python3 || true
+            pip3 install ansible
 
   execute_ansible:
     name: Execute Ansible Playbook
