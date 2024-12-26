@@ -68,7 +68,11 @@ jobs:
           key: ${{ secrets.BASTION_PRIVATE_KEY }}
           port: 22
           script: |
-            pip3 install ansible
+            sudo apt update -y
+            sudo apt install -y python3-venv
+            python3 -m venv ~/ansible_env
+            source ~/ansible_env/bin/activate
+            pip install ansible
 
   execute_ansible:
     name: Execute Ansible Playbook
