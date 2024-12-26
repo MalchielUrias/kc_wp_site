@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "platforms/**"
+      - ".github/workflows/deploy-wordpress.yml"
 
 jobs:
   deploy:
@@ -53,7 +54,7 @@ jobs:
             echo WORDPRESS_DB_HOST=mysql:3306 >> .env
             echo WORDPRESS_DB_NAME=wordpress >> .env
             echo WORDPRESS_DB_USER=bn_wordpress >> .env
-            echo WORDPRESS_DB_PASSWORD=${{ secrets.WORDPRESS_DB_PASSWORD }} >> .env
+            echo WORDPRESS_DATABASE_PASSWORD=${{ secrets.WORDPRESS_DB_PASSWORD }} >> .env
             echo MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} >> .env
             echo MYSQL_DATABASE=wordpress >> .env
             echo MYSQL_USER=bn_wordpress >> .env
