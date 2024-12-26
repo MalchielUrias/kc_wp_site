@@ -68,9 +68,6 @@ jobs:
           key: ${{ secrets.BASTION_PRIVATE_KEY }}
           port: 22
           script: |
-            sudo apt update -y
-            sudo apt install -y python3 python3-pip
-            sudo alternatives --set python /usr/bin/python3 || true
             pip3 install ansible
 
   execute_ansible:
