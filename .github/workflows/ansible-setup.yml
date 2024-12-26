@@ -8,16 +8,15 @@ on:
       - "ansible/**"
 
 permissions:
-  id-token: write   
-  contents: read  
+  id-token: write
+  contents: read
 
 env:
   GH_TOKEN: ${{ github.token }}
 
 jobs:
-  # Deploy files to bastion ec2
   deploy_files:
-    name: deploy
+    name: Deploy Files to Bastion EC2
     runs-on: ubuntu-latest
     steps:
       - name: Repository Checkout
@@ -26,54 +25,50 @@ jobs:
       - name: Zip files for transfer
         run: zip -r ansible.zip ansible/
 
-      - name: Upload files to a temporary HTTP server
-        uses: actions/upload-artifact@v3
-        with:
-          name: ansible-files
-          path: ansible.zip
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: ${{ secrets.OIDC_ROLE }}
-          aws-region: eu-west-1
-
-      - name: Fetch files directly on EC2 via SSM
+      - name: Configure SSH key
         run: |
-          # Get the download URL for the latest artifact
-          ARTIFACT_URL=$(gh api /repos/${{ github.repository }}/actions/artifacts \
-            --jq '.artifacts[] | select(.name=="ansible-files") | .archive_download_url' \
-            -H "Accept: application/vnd.github+json")
-          
-          aws ssm send-command \
-            --document-name "AWS-RunShellScript" \
-            --instance-ids ${{ secrets.BASTION_INSTANCE_ID  }} \
-            --parameters "commands=[\"curl -L -o ~/ansible.zip '$ARTIFACT_URL'\",\"unzip -o ~/ansible.zip -d ~/ansible/\"]" \
-            --comment "Deploy Ansible files"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.BASTION_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-      - name: Cleanup local files
-        run: rm -rf ansible.zip
+      - name: Copy files to Bastion EC2
+        run: |
+          scp -o StrictHostKeyChecking=no ansible.zip ubuntu@${{ vars.BASTION_HOST }}:~/
+
+      - name: SSH into Bastion EC2 and Unzip Files
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ vars.BASTION_HOST }}
+          username: ubuntu
+          key: ${{ secrets.BASTION_PRIVATE_KEY }}
+          port: 22
+          script: |
+            unzip -o ~/ansible.zip -d ~/ansible/
+            rm ~/ansible.zip
 
   setup_ec2:
     name: Setup EC2 Instances
     runs-on: ubuntu-latest
-    needs: deploy_files 
+    needs: deploy_files
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          role-to-assume: ${{ secrets.OIDC_ROLE }}
-          aws-region: eu-west-1
-
-      - name: Install Ansible and Python on EC2s
+      - name: Configure SSH key
         run: |
-          aws ssm send-command \
-            --document-name "AWS-RunShellScript" \
-            --instance-ids ${{ secrets.BASTION_INSTANCE_ID  }} \
-            --parameters '{"commands":["sudo yum update -y", "sudo yum install -y python3", "sudo alternatives --set python /usr/bin/python3", "sudo pip3 install ansible"],"executionTimeout":["300"]}' \
-            --comment "Installing Python and Ansible" \
-            --output text \
-            --query "Command.CommandId"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.BASTION_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: SSH into Bastion EC2 and Install Dependencies
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ vars.BASTION_HOST }}
+          username: ubuntu
+          key: ${{ secrets.BASTION_PRIVATE_KEY }}
+          port: 22
+          script: |
+            sudo yum update -y
+            sudo yum install -y python3
+            sudo alternatives --set python /usr/bin/python3
+            sudo pip3 install ansible
 
   execute_ansible:
     name: Execute Ansible Playbook
@@ -92,13 +87,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install ansible
-      
-      - name: View dirs
-        run: |
-          ls -lr
-          ls -lr ansible/
 
-      - name: Set up SSH key
+      - name: Configure SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.BASTION_PRIVATE_KEY }}" > ~/.ssh/id_rsa
