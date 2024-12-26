@@ -1,5 +1,5 @@
 [bastion]
-bastion ansible_host=34.254.163.118
+bastion ansible_host=3.252.37.128
 
 [wp:children]
 bastion
